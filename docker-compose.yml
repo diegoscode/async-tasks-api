@@ -1,0 +1,30 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rabbitmq
+      - redis
+
+  celery_worker:
+    build: .
+    command: celery -A app.celery_worker worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - rabbitmq
+      - redis
